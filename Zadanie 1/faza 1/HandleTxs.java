@@ -1,4 +1,4 @@
-// Meno študenta:
+// Meno študenta: Andrii Synko
 public class HandleTxs {
 
     /**
@@ -6,8 +6,11 @@ public class HandleTxs {
      * transakčných výstupov) je {@code utxoPool}. Malo by to vytvoriť bezpečnú kópiu
      * utxoPool pomocou konštruktora UTXOPool (UTXOPool uPool).
      */
+
+    private UTXOPool utxoPool;
+
     public HandleTxs(UTXOPool utxoPool) {
-        // IMPLEMENTOVAŤ
+        this.utxoPool = utxoPool;
     }
 
     /**
@@ -15,8 +18,11 @@ public class HandleTxs {
      * Ak nenájde žiadny aktuálny UTXO pool, tak vráti prázdny (nie nulový) objekt {@code UTXOPool}.
      */
     public UTXOPool UTXOPoolGet() {
-        // IMPLEMENTOVAŤ
-        return false;
+        if (utxoPool == null) {
+            utxoPool = new UTXOPool();
+        }
+
+        return utxoPool;
     }
 
     /**
