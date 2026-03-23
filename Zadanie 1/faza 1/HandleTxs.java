@@ -1,6 +1,8 @@
 // Meno študenta: Andrii Synko
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 /**
  * Processes batches of transactions against the current UTXO pool.
@@ -30,13 +32,13 @@ public class HandleTxs {
 
     /**
      * Validates a single transaction. Returns true only if ALL of these hold:
-     * (3) No UTXO is claimed by more than one input (no double-spend within this transaction)
      * (4) Every output value is >= 0 (no negative amounts)
      * (5) Total input value >= total output value (no coins created out of thin air)
      */
     public boolean txIsValid(Transaction tx) {
 
         ArrayList<Transaction.Input> inputs = tx.getInputs();
+        HashSet<UTXO> claimedUtxo = new HashSet<>();
 
         for (int i=0; i<inputs.size(); i++) {
             // (1) Every input references a UTXO that exists in the current pool (no spending phantom coins)
@@ -57,6 +59,11 @@ public class HandleTxs {
                 return false;
             }
 
+
+            // (3) No UTXO is claimed by more than one input (no double-spend within this transaction)
+            if (!claimedUtxo.add(utxo)) { // add element if its not present, false if it is
+                return false;
+            }
         }
 
 
