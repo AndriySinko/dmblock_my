@@ -1,10 +1,11 @@
 
 /**
  * UTXOPool.java
- * 
- * Táto trieda reprezentuje UTXO pool, ktorý mapuje jednotlivé UTXO na ich
- * korešpondujúce transakčné výstupy 
-*/ 
+ *
+ * Represents the set of all currently unspent transaction outputs (the "ledger state").
+ * Maps each UTXO (pointer to an output) to the actual Transaction.Output object (value + recipient).
+ * When a coin is created it's added here; when it's spent it's removed.
+ */
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,53 +14,59 @@ import java.util.Set;
 public class UTXOPool {
 
     /**
-     * Aktuálna zbierka UTXO, pričom každé z nich je mapované na zodpovedajúci
-     * výstup transakcie
+     * The internal map: UTXO (txHash + index) → Transaction.Output (value + address).
+     * Looking up a UTXO tells you how much it's worth and who owns it.
      */
     private HashMap<UTXO, Transaction.Output> H;
 
-    /** Vytvorí nový prázdny UTXOPool */
+    /** Creates a new empty pool — no unspent outputs yet */
     public UTXOPool() {
         H = new HashMap<UTXO, Transaction.Output>();
     }
 
-    /** Vytvorí nový UTXOPool, ktorý je kópiou {@code uPool} */
+    /**
+     * Copy constructor: creates an independent copy of uPool.
+     * Changes to this new pool won't affect the original.
+     */
     public UTXOPool(UTXOPool uPool) {
-        H = new HashMap<UTXO, Transaction.Output>(uPool.H);
+        H = new HashMap<UTXO, Transaction.Output>(uPool.H); // shallow copy: same entries, new map object
     }
 
     /**
-     * Pridá namapovanie z UTXO {@code utxo} do transackčného výstupu {@code txOut}
-     * v poole
+     * Registers a new unspent output in the pool.
+     * Called when a transaction output is created (new coin exists).
      */
     public void addUTXO(UTXO utxo, Transaction.Output txOut) {
-        H.put(utxo, txOut);
-    }
-
-    /** Odstráni UTXO {@code utxo} z poolu */
-    public void removeUTXO(UTXO utxo) {
-        H.remove(utxo);
+        H.put(utxo, txOut); // key = UTXO pointer, value = the actual output data
     }
 
     /**
-     * @return výstup transakcie zodpovedajúci UTXO {@code utxo} alebo null, ak
-     *         {@code utxo} nie je v poole.
+     * Marks a UTXO as spent by removing it from the pool.
+     * Called when a transaction input consumes this output.
+     */
+    public void removeUTXO(UTXO utxo) {
+        H.remove(utxo); // removes the entry; the coin is now "spent"
+    }
+
+    /**
+     * Returns the Transaction.Output associated with the given UTXO.
+     * Returns null if the UTXO is not in the pool (already spent or never existed).
      */
     public Transaction.Output getTxOutput(UTXO ut) {
-        return H.get(ut);
+        return H.get(ut); // HashMap lookup by UTXO key
     }
 
-    /** @return true ak UTXO {@code utxo} je v poole a inak false */
+    /** Returns true if the UTXO is in the pool (i.e., still unspent) */
     public boolean contains(UTXO utxo) {
-        return H.containsKey(utxo);
+        return H.containsKey(utxo); // checks if the key exists in the map
     }
 
-    /** Vráti {@code ArrayList} všetkých UTXOs v poole */
+    /** Returns all UTXOs currently in the pool as a list */
     public ArrayList<UTXO> getAllUTXO() {
-        Set<UTXO> setUTXO = H.keySet();
+        Set<UTXO> setUTXO = H.keySet();               // get all keys from the map as a Set
         ArrayList<UTXO> allUTXO = new ArrayList<UTXO>();
         for (UTXO ut : setUTXO) {
-            allUTXO.add(ut);
+            allUTXO.add(ut);                           // copy each UTXO into the ArrayList
         }
         return allUTXO;
     }

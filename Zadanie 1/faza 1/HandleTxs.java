@@ -1,5 +1,12 @@
 // Meno študenta: Andrii Synko
+
+/**
+ * Processes batches of transactions against the current UTXO pool.
+ * Validates each transaction and updates the pool state for accepted ones.
+ */
 public class HandleTxs {
+
+    private UTXOPool utxoPool;
 
     /**
      * Vytvorí verejný ledger (účtovnú knihu), ktorého aktuálny UTXOPool (zbierka nevyčerpaných
@@ -7,16 +14,10 @@ public class HandleTxs {
      * utxoPool pomocou konštruktora UTXOPool (UTXOPool uPool).
      */
 
-    private UTXOPool utxoPool;
-
     public HandleTxs(UTXOPool utxoPool) {
-        this.utxoPool = utxoPool;
+        this.utxoPool = new UTXOPool(utxoPool);
     }
 
-    /**
-     * @return aktuálny UTXO pool. 
-     * Ak nenájde žiadny aktuálny UTXO pool, tak vráti prázdny (nie nulový) objekt {@code UTXOPool}.
-     */
     public UTXOPool UTXOPoolGet() {
         if (utxoPool == null) {
             utxoPool = new UTXOPool();
@@ -26,26 +27,26 @@ public class HandleTxs {
     }
 
     /**
-     * @return true, ak 
-     * (1) sú všetky nárokované výstupy {@code tx} v aktuálnom UTXO pool, 
-     * (2) podpisy na každom vstupe {@code tx} sú platné, 
-     * (3) žiadne UTXO nie je nárokované viackrát, 
-     * (4) všetky výstupné hodnoty {@code tx}s sú nezáporné a 
-     * (5) súčet vstupných hodnôt {@code tx}s je väčší alebo rovný súčtu jej
-     *     výstupných hodnôt; a false inak.
+     * Validates a single transaction. Returns true only if ALL of these hold:
+     * (1) Every input references a UTXO that exists in the current pool (no spending phantom coins)
+     * (2) The signature on each input is valid (proves the spender owns the coin)
+     * (3) No UTXO is claimed by more than one input (no double-spend within this transaction)
+     * (4) Every output value is >= 0 (no negative amounts)
+     * (5) Total input value >= total output value (no coins created out of thin air)
      */
     public boolean txIsValid(Transaction tx) {
-        // IMPLEMENTOVAŤ
+        // TODO: implement validation logic
         return false;
     }
 
     /**
-     * Spracováva každú epochu (iteráciu) prijímaním neusporiadaného radu navrhovaných
-     * transakcií, kontroluje správnosť každej transakcie, vracia pole vzájomne 
-     * platných prijatých transakcií a aktualizuje aktuálny UTXO pool podľa potreby.
+     * Processes one epoch (round) of proposed transactions.
+     * Accepts all mutually valid transactions from the unordered list,
+     * updates the UTXO pool (removes spent outputs, adds new ones),
+     * and returns the array of accepted transactions.
      */
     public Transaction[] handler(Transaction[] possibleTxs) {
-        // IMPLEMENTOVAŤ
+        // TODO: implement handler logic
         return false;
     }
 }
