@@ -1,5 +1,7 @@
 // Meno študenta: Andrii Synko
 
+import java.util.ArrayList;
+
 /**
  * Processes batches of transactions against the current UTXO pool.
  * Validates each transaction and updates the pool state for accepted ones.
@@ -28,15 +30,29 @@ public class HandleTxs {
 
     /**
      * Validates a single transaction. Returns true only if ALL of these hold:
-     * (1) Every input references a UTXO that exists in the current pool (no spending phantom coins)
      * (2) The signature on each input is valid (proves the spender owns the coin)
      * (3) No UTXO is claimed by more than one input (no double-spend within this transaction)
      * (4) Every output value is >= 0 (no negative amounts)
      * (5) Total input value >= total output value (no coins created out of thin air)
      */
     public boolean txIsValid(Transaction tx) {
-        // TODO: implement validation logic
-        return false;
+
+        // (1) Every input references a UTXO that exists in the current pool (no spending phantom coins)
+        ArrayList<Transaction.Input> inputs = tx.getInputs();
+
+        for (Transaction.Input input : inputs) {
+            // reconstruct new utxo based on utxo(transaction hash and index of output) that our input references
+            UTXO utxo = new UTXO(input.prevTxHash, input.outputIndex);
+
+            if (!utxoPool.contains(utxo)) { // check that pool contains, if not return false
+                return false;
+            }
+        }
+
+
+
+
+        return true;
     }
 
     /**
