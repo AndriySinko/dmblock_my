@@ -64,6 +64,12 @@ public class HandleTxs {
             if (!claimedUtxo.add(utxo)) { // add element if its not present, false if it is
                 return false;
             }
+
+
+            // (4) Every output value is >= 0 (no negative amounts)
+            if (output.value<0) {
+                return false;
+            }
         }
 
 
