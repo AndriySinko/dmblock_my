@@ -32,13 +32,12 @@ public class HandleTxs {
 
     /**
      * Validates a single transaction. Returns true only if ALL of these hold:
-     * (4) Every output value is >= 0 (no negative amounts)
-     * (5) Total input value >= total output value (no coins created out of thin air)
      */
     public boolean txIsValid(Transaction tx) {
 
         ArrayList<Transaction.Input> inputs = tx.getInputs();
         HashSet<UTXO> claimedUtxo = new HashSet<>();
+        double totalInputValue = 0;
 
         for (int i=0; i<inputs.size(); i++) {
             // (1) Every input references a UTXO that exists in the current pool (no spending phantom coins)
@@ -49,16 +48,14 @@ public class HandleTxs {
                 return false;
             }
 
-
             // (2) The signature on each input is valid (proves the spender owns the coin)
-            Transaction.Output output = utxoPool.getTxOutput(utxo); // get output from input's utxo
-            RSAKey publicKey = output.address; // get address of the owner of that output
+            Transaction.Output txOutput = utxoPool.getTxOutput(utxo); // get output from input's utxo
+            RSAKey publicKey = txOutput.address; // get address of the owner of that output
             byte[] dataToSign = tx.getDataToSign(i); // get the data which will prove ownership
 
             if (!publicKey.verifySignature(dataToSign, input.signature)){
                 return false;
             }
-
 
             // (3) No UTXO is claimed by more than one input (no double-spend within this transaction)
             if (!claimedUtxo.add(utxo)) { // add element if its not present, false if it is
@@ -66,14 +63,27 @@ public class HandleTxs {
             }
 
 
+            totalInputValue += txOutput.value;
+        }
+
+        ArrayList<Transaction.Output> outputs =tx.getOutputs();
+        double totalOutputValue = 0;
+
+        for (int i=0; i<outputs.size(); i++) {
+            Transaction.Output output = outputs.get(i);
+
             // (4) Every output value is >= 0 (no negative amounts)
             if (output.value<0) {
                 return false;
             }
+
+            // (5) Total input value >= total output value (no coins created out of thin air)
+            totalOutputValue += output.value;
         }
 
-
-
+        if (totalInputValue < totalOutputValue) {
+            return false;
+        }
 
         return true;
     }
