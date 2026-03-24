@@ -1,6 +1,7 @@
 // Meno študenta: Andrii Synko
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -98,10 +99,14 @@ public class HandleTxs {
         ArrayList<Transaction> acceptedTransactions = new ArrayList<>();
         boolean found = true;
 
+        ArrayList<Transaction> transactions = new ArrayList<>(Arrays.asList(possibleTxs));
+        ArrayList<Transaction> removeList = new ArrayList<>();
+
         while (found) {
             found = false; // check by rounds, until transaction isnt found anymore
+            removeList.clear(); // clear list for next iteration
 
-            for (Transaction transaction : possibleTxs) {
+            for (Transaction transaction : transactions) {
                 if (txIsValid(transaction)) {
                     acceptedTransactions.add(transaction); // add tx to pool
 
@@ -117,8 +122,10 @@ public class HandleTxs {
                     }
 
                     found = true; // at least one is found
+                    removeList.add(transaction);
                 }
             }
+            transactions.removeAll(removeList); // remove all accepted txs
         }
 
 
