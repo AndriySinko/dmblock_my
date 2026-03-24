@@ -95,7 +95,33 @@ public class HandleTxs {
      * and returns the array of accepted transactions.
      */
     public Transaction[] handler(Transaction[] possibleTxs) {
-        // TODO: implement handler logic
-        return false;
+        ArrayList<Transaction> acceptedTransactions = new ArrayList<>();
+        boolean found = true;
+
+        while (found) {
+            found = false; // check by rounds, until transaction isnt found anymore
+
+            for (Transaction transaction : possibleTxs) {
+                if (txIsValid(transaction)) {
+                    acceptedTransactions.add(transaction); // add tx to pool
+
+                    for (Transaction.Input input : transaction.getInputs()) {
+                        UTXO utxo = new UTXO(input.prevTxHash, input.outputIndex); // get all input utxos
+                        utxoPool.removeUTXO(utxo); //remove them from the pool
+                    }
+
+                    ArrayList<Transaction.Output> outputs = transaction.getOutputs(); // get outputs
+                    for (int j = 0; j < outputs.size(); j++) {
+                        UTXO utxo = new UTXO(transaction.getHash(), j); // create new utxo
+                        utxoPool.addUTXO(utxo, outputs.get(j)); // add them to the pool, cuz they might unlock new transaction
+                    }
+
+                    found = true; // at least one is found
+                }
+            }
+        }
+
+
+        return acceptedTransactions.toArray(new Transaction[0]);
     }
 }
