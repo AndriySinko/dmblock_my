@@ -1,4 +1,4 @@
-// Meno študenta:
+// Meno študenta: Andrii Synko
 import java.util.ArrayList;
 import java.util.Set;
 
