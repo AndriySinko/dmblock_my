@@ -10,7 +10,8 @@ public class Blockchain {
     public static final int CUT_OFF_AGE = 12;
 
     private HashMap<ByteArrayWrapper, BlockNode> hashToBlock;
-    private Block lastBlock;
+    private BlockNode lastBlock;
+    private TransactionPool memoryPool;
 
     // všetky potrebné informácie na spracovanie bloku v reťazi blokov
     private class BlockNode {
@@ -56,14 +57,17 @@ public class Blockchain {
 
         //create blockchain
         hashToBlock = new HashMap<>(); // init blockhain
-        hashToBlock.put(new ByteArrayWrapper(genesisBlock.getHash()), new BlockNode(genesisBlock,null, uPool)); // add genesis block
-        lastBlock = genesisBlock; // update
+        BlockNode root = new BlockNode(genesisBlock, null, uPool); // create genesis blocknode
+        hashToBlock.put(new ByteArrayWrapper(genesisBlock.getHash()), root); // add genesis block
 
+        lastBlock = root; // update highest block
+
+        memoryPool = new TransactionPool();
     }
 
     /** Získaj najvyšší (maximum height) blok */
     public Block getBlockAtMaxHeight() {
-        return lastBlock;
+        return lastBlock.b;
     }
 
     /**
@@ -71,11 +75,12 @@ public class Blockchain {
      * bloku
      */
     public UTXOPool getUTXOPoolAtMaxHeight() {
+        return lastBlock.uPool;
     }
 
     /** Získaj pool transakcií na vyťaženie nového bloku */
     public TransactionPool getTransactionPool() {
-        // IMPLEMENTOVAŤ
+        return memoryPool;
     }
 
     /**
@@ -96,6 +101,6 @@ public class Blockchain {
 
     /** Pridaj transakciu do transakčného poolu */
     public void transactionAdd(Transaction tx) {
-        // IMPLEMENTOVAŤ
+        memoryPool.addTransaction(tx);
     }
 }
