@@ -42,12 +42,12 @@ public class MaxFeeHandleTxs extends HandleTxs {
             for (Transaction.Input input : inputs) {
                 UTXO utxo = new UTXO(input.prevTxHash, input.outputIndex); // recreate utxo of the input
                 Transaction.Output txOutput = utxoPool.getTxOutput(utxo); // get utxo from the pool
-                if (txOutput != null) { // utxo is not in the pool (means that transaction depends on another transaction)
+                if (txOutput != null) { // transaction depends on another transaction if null
                     sumOfInputs += txOutput.value;
                 }
             }
 
-            // get outputs of transaction and
+            // get outputs of transaction and calculate feex
             ArrayList<Transaction.Output> outputs = transaction.getOutputs();
             double sumOfOutputs = 0;
             for (Transaction.Output output : outputs) {

@@ -104,15 +104,16 @@ public class HandleTxs {
 
         while (found) {
             found = false; // check by rounds, until transaction isnt found anymore
-            removeList.clear(); // clear list for next iteration
+            removeList.clear();
 
             for (Transaction transaction : transactions) {
                 if (txIsValid(transaction)) {
                     acceptedTransactions.add(transaction); // add tx to pool
 
+                    // get all input utxos and remove from the pool
                     for (Transaction.Input input : transaction.getInputs()) {
-                        UTXO utxo = new UTXO(input.prevTxHash, input.outputIndex); // get all input utxos
-                        utxoPool.removeUTXO(utxo); //remove them from the pool
+                        UTXO utxo = new UTXO(input.prevTxHash, input.outputIndex);
+                        utxoPool.removeUTXO(utxo);
                     }
 
                     ArrayList<Transaction.Output> outputs = transaction.getOutputs(); // get outputs

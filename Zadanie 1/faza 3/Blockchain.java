@@ -12,6 +12,7 @@ public class Blockchain {
     private HashMap<ByteArrayWrapper, BlockNode> hashToBlock;
     private BlockNode lastBlock;
     private TransactionPool memoryPool;
+    private HandleTxs txHandler;
 
     // všetky potrebné informácie na spracovanie bloku v reťazi blokov
     private class BlockNode {
@@ -75,7 +76,7 @@ public class Blockchain {
      * bloku
      */
     public UTXOPool getUTXOPoolAtMaxHeight() {
-        return lastBlock.uPool;
+        return lastBlock.getUTXOPoolCopy(); // copy, we dont want to change existing block upool
     }
 
     /** Získaj pool transakcií na vyťaženie nového bloku */
@@ -96,7 +97,75 @@ public class Blockchain {
      * @return true, ak je blok úspešne pridaný
      */
     public boolean blockAdd(Block block) {
-        // IMPLEMENTOVAŤ
+        if (block == null) return false;
+        if (block.getPrevBlockHash() == null) return false; // genesis
+        if (hashToBlock.containsKey(new ByteArrayWrapper(block.getHash()))) return false; // alredy in blockchain
+
+        // get parent
+        ByteArrayWrapper parentHash = new ByteArrayWrapper(block.getPrevBlockHash());
+        BlockNode parentNode = hashToBlock.get(parentHash);
+        if (parentNode == null) return false; // info from parent is lost
+
+        // check height
+        int newHeight = parentNode.height + 1;
+        if (newHeight <= lastBlock.height - CUT_OFF_AGE) return false; // too old
+
+
+        // check transactions
+        UTXOPool parentPool =  parentNode.getUTXOPoolCopy();
+        txHandler = new HandleTxs(parentPool);
+
+        ArrayList<Transaction> transactions = block.getTransactions();
+        Transaction[] acceptedTxs = txHandler.handler(transactions.toArray(new Transaction[0]));
+        if (acceptedTxs.length != transactions.size()) return false; // transactions arent valid
+
+
+        // update utxopool with coinbase
+        UTXOPool newUTXOPool = txHandler.UTXOPoolGet();
+        Transaction coinbase = block.getCoinbase();
+        ArrayList<Transaction.Output> coinbaseOutputs =  coinbase.getOutputs();
+        for (int i = 0; i <coinbaseOutputs.size(); i++) {
+            UTXO utxo = new UTXO(coinbase.getHash(), i);
+            newUTXOPool.addUTXO(utxo, coinbaseOutputs.get(i));
+        }
+
+        // update mempool
+        for (Transaction tx : acceptedTxs) {
+            memoryPool.removeTransaction(tx.getHash());
+        }
+
+        // create blockand append blockchain
+        BlockNode newNode = new BlockNode(block, parentNode, newUTXOPool);
+        hashToBlock.put(new ByteArrayWrapper(block.getHash()), newNode);
+
+
+        // update tree
+        if (newNode.height > lastBlock.height) {
+            lastBlock = newNode; // update the latest block
+
+           int threshold = lastBlock.height - CUT_OFF_AGE;
+           ArrayList<ByteArrayWrapper> hashesToRemove = new ArrayList<>();
+
+           // find nodes to delete
+           for (ByteArrayWrapper hash : hashToBlock.keySet()) {
+               if (hashToBlock.get(hash).height < threshold) {
+                   hashesToRemove.add(hash);
+               }
+           }
+
+           // delete nodes
+           for (ByteArrayWrapper hash : hashesToRemove) {
+               BlockNode toRemove = hashToBlock.get(hash);
+               for (BlockNode child : toRemove.children) {
+                   child.parent = null;
+               }
+               toRemove.children.clear();
+
+               hashToBlock.remove(hash);
+           }
+        }
+
+        return true;
     }
 
     /** Pridaj transakciu do transakčného poolu */
