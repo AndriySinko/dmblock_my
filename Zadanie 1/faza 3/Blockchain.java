@@ -1,5 +1,5 @@
 
-// Meno študenta:
+// Meno študenta: Andrii Synko
 // Blockchain by mal na naplnenie funkcií udržiavať iba obmedzené množstvo uzlov
 // Nemali by ste mať všetky bloky pridané do blockchainu v pamäti  
 // pretože by to mohlo spôsobiť pretečenie pamäte.
@@ -8,6 +8,9 @@ import java.util.HashMap;
 
 public class Blockchain {
     public static final int CUT_OFF_AGE = 12;
+
+    private HashMap<ByteArrayWrapper, BlockNode> hashToBlock;
+    private Block lastBlock;
 
     // všetky potrebné informácie na spracovanie bloku v reťazi blokov
     private class BlockNode {
@@ -27,7 +30,7 @@ public class Blockchain {
                 height = parent.height + 1;
                 parent.children.add(this);
             } else {
-                eight = 1;
+                height = 1;
             }
         }
 
@@ -41,12 +44,26 @@ public class Blockchain {
      * {@code genesisBlock} je platný blok
      */
     public Blockchain(Block genesisBlock) {
-        // IMPLEMENTOVAŤ
+        // create utxopool for genesis block and update it with new coinbase utxo
+        UTXOPool uPool = new UTXOPool();
+        Transaction coinbase = genesisBlock.getCoinbase();
+        ArrayList<Transaction.Output> coinbaseOutputs =  coinbase.getOutputs();
+
+        for (int i = 0; i <coinbaseOutputs.size(); i++) {
+            UTXO utxo = new UTXO(coinbase.getHash(), i);
+            uPool.addUTXO(utxo, coinbaseOutputs.get(i));
+        }
+
+        //create blockchain
+        hashToBlock = new HashMap<>(); // init blockhain
+        hashToBlock.put(new ByteArrayWrapper(genesisBlock.getHash()), new BlockNode(genesisBlock,null, uPool)); // add genesis block
+        lastBlock = genesisBlock; // update
+
     }
 
     /** Získaj najvyšší (maximum height) blok */
     public Block getBlockAtMaxHeight() {
-        // IMPLEMENTOVAŤ
+        return lastBlock;
     }
 
     /**
@@ -54,7 +71,6 @@ public class Blockchain {
      * bloku
      */
     public UTXOPool getUTXOPoolAtMaxHeight() {
-        // IMPLEMENTOVAŤ
     }
 
     /** Získaj pool transakcií na vyťaženie nového bloku */
