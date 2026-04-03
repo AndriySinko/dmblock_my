@@ -65,7 +65,7 @@ public class HandleTxs {
 
 
             totalInputValue += txOutput.value;
-        }
+        }   
 
         ArrayList<Transaction.Output> outputs =tx.getOutputs();
         double totalOutputValue = 0;

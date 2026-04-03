@@ -106,9 +106,7 @@ public class Blockchain {
         BlockNode parentNode = hashToBlock.get(parentHash);
         if (parentNode == null) return false; // info from parent is lost
 
-        // check height
-        int newHeight = parentNode.height + 1;
-        if (newHeight <= lastBlock.height - CUT_OFF_AGE) return false; // too old
+        if (parentNode.height + 1 <= lastBlock.height - CUT_OFF_AGE) return false; // too old
 
 
         // check transactions

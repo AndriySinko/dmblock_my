@@ -30,10 +30,12 @@ public class TrustedNode implements Node {
         for (Integer[] candidate : candidates) {
             int txId = candidate[0];
             int sender = candidate[1];
-            if (!txToSenders.containsKey(txId)) {
-                txToSenders.put(txId, new HashSet<>()); // add tx if absent
+            if(followees[sender]) { // whether we follow sender
+                if (!txToSenders.containsKey(txId)) {
+                    txToSenders.put(txId, new HashSet<>()); // add tx if absent
+                }
+                txToSenders.get(txId).add(sender); // put there sender
             }
-            txToSenders.get(txId).add(sender); // put there sender
         }
 
         int threshold = 1; // one cuz byzantines are silent, otherwise calculate based on followees
