@@ -26,7 +26,12 @@ public class TrustedNode implements Node {
         return transactionsPool; // return transactions that node believes in
     }
     public void followeesReceive(ArrayList<Integer[]> candidates) {
+
+        /** Method of storing unique senders of a transaction in the list,
+         * and putting it in hashmap with txId instead of making list with counters
+         * was suggested by AI (claude) **/
         HashMap<Integer, Set<Integer>> txToSenders = new HashMap<>(); // stores senders of the txId
+
         for (Integer[] candidate : candidates) {
             int txId = candidate[0];
             int sender = candidate[1];

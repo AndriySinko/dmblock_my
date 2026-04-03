@@ -65,7 +65,7 @@ public class HandleTxs {
 
 
             totalInputValue += txOutput.value;
-        }   
+        }
 
         ArrayList<Transaction.Output> outputs =tx.getOutputs();
         double totalOutputValue = 0;
@@ -100,7 +100,8 @@ public class HandleTxs {
         boolean found = true;
 
         ArrayList<Transaction> transactions = new ArrayList<>(Arrays.asList(possibleTxs));
-        ArrayList<Transaction> removeList = new ArrayList<>();
+
+        ArrayList<Transaction> removeList = new ArrayList<>(); /** Data structure and removing method suggested by AI (Claude)**/
 
         while (found) {
             found = false; // check by rounds, until transaction isnt found anymore

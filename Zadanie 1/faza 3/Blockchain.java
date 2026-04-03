@@ -9,7 +9,9 @@ import java.util.HashMap;
 public class Blockchain {
     public static final int CUT_OFF_AGE = 12;
 
+    /**Data structure suggested by AI (claude) for faster lookup than list O(1) vs O(n)**/
     private HashMap<ByteArrayWrapper, BlockNode> hashToBlock;
+
     private BlockNode lastBlock;
     private TransactionPool memoryPool;
     private HandleTxs txHandler;
